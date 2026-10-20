@@ -60,7 +60,7 @@ addEventListener('keydown', e => {
 });
 
 // currency switch (rates are rough guides; update as needed)
-const rates = { GBP: [1, '£'], USD: [1.3, '$'], THB: [46, '฿'], VND: [33000, '₫'] };
+const rates = { GBP: [1, '£'], EUR: [1.17, '€'], USD: [1.3, '$'] };
 $$('.cur button').forEach(b => b.onclick = () => {
   $$('.cur button').forEach(x => x.classList.toggle('on', x === b));
   const [r, sym] = rates[b.dataset.cur];
@@ -70,3 +70,32 @@ $$('.cur button').forEach(b => b.onclick = () => {
     el.textContent = sym + v.toLocaleString('en-GB');
   });
 });
+
+// booking calendar: click a date to request it
+(() => {
+  const BOOKED = []; // add already-booked dates as 'YYYY-MM-DD'
+  const el = $('#cal'), note = $('#calNote'), field = $('#dateField');
+  const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  let view = new Date(today.getFullYear(), today.getMonth(), 1), sel = '';
+  function render() {
+    const first = (view.getDay() + 6) % 7, days = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
+    const atMin = view <= new Date(today.getFullYear(), today.getMonth(), 1);
+    let h = `<div class="cal-head"><button type="button" data-d="-1" aria-label="Previous month" ${atMin ? 'disabled' : ''}>‹</button><b>${view.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}</b><button type="button" data-d="1" aria-label="Next month">›</button></div><div class="cal-grid">`;
+    h += ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map(d => `<span>${d}</span>`).join('') + '<i></i>'.repeat(first);
+    for (let n = 1; n <= days; n++) {
+      const d = new Date(view.getFullYear(), view.getMonth(), n), k = iso(d), off = d < today || BOOKED.includes(k);
+      h += `<button type="button" data-date="${k}" class="${k === sel ? 'sel ' : ''}${+d === +today ? 'today ' : ''}${BOOKED.includes(k) ? 'booked' : ''}" ${off ? 'disabled' : ''} aria-label="${d.toDateString()}">${n}</button>`;
+    }
+    el.innerHTML = h + '</div>';
+  }
+  el.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.d) { view.setMonth(view.getMonth() + +b.dataset.d); render(); return; }
+    sel = b.dataset.date; field.value = sel; render();
+    note.textContent = 'Requesting ' + new Date(sel).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + '. Fill in the form to send.';
+    $('#form').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    $('#form [name=name]').focus({ preventScroll: true });
+  });
+  render();
+})();
