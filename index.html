@@ -187,7 +187,7 @@
         <p class="cal-note" id="calNote" aria-live="polite">Select a date to request it.</p>
       </div>
     </div>
-    <form class="form reveal" id="form" action="mailto:hello@worldeventphotography.com" method="post" enctype="text/plain">
+    <form class="form reveal" id="form">
       <label>Name<input name="name" required autocomplete="name"></label>
       <label>Email<input type="email" name="email" required autocomplete="email"></label>
       <div class="row">
@@ -199,6 +199,7 @@
       <label>Location<input name="location" placeholder="e.g. London, Lisbon"></label>
       <label>Details<textarea name="message" rows="4"></textarea></label>
       <button class="btn" type="submit">Send enquiry</button>
+      <p class="form-msg" id="formMsg" role="status" aria-live="polite"></p>
     </form>
   </div>
 </section>
@@ -207,7 +208,7 @@
 
 <footer class="foot">
   <span>© <span id="yr"></span> World Event Photography — David Roberts</span>
-  <a href="#top">Back to top ↑</a>
+  <span><a href="admin.html" rel="nofollow">Admin</a> · <a href="#top">Back to top ↑</a></span>
 </footer>
 
 <div class="lightbox" id="lb" hidden>
@@ -217,6 +218,7 @@
   <button class="lb-nav next" aria-label="Next">›</button>
 </div>
 
+<script src="config.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

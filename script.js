@@ -73,7 +73,7 @@ $$('.cur button').forEach(b => b.onclick = () => {
 
 // booking calendar: click a date to request it
 (() => {
-  const BOOKED = []; // add already-booked dates as 'YYYY-MM-DD'
+  let BOOKED = []; // filled from Supabase blocked_dates
   const el = $('#cal'), note = $('#calNote'), field = $('#dateField');
   const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -98,4 +98,36 @@ $$('.cur button').forEach(b => b.onclick = () => {
     $('#form [name=name]').focus({ preventScroll: true });
   });
   render();
+  const { supabaseUrl: U, supabaseKey: K } = window.WEP;
+  fetch(`${U}/rest/v1/blocked_dates?select=event_date`, { headers: { apikey: K, Authorization: 'Bearer ' + K } })
+    .then(r => r.ok ? r.json() : [])
+    .then(rows => { BOOKED = rows.map(r => r.event_date); render(); })
+    .catch(() => {});
 })();
+
+// enquiry form: save to Supabase and, when configured, forward to Formspree
+$('#form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const f = e.target, msg = $('#formMsg'), btn = $('button[type=submit]', f);
+  const { supabaseUrl: U, supabaseKey: K, formspree } = window.WEP;
+  const d = Object.fromEntries(new FormData(f));
+  const row = { name: d.name, email: d.email, type: d.type, event_date: d.date || null, location: d.location || null, message: d.message || null };
+  btn.disabled = true; msg.textContent = 'Sending…';
+  try {
+    const saved = await fetch(`${U}/rest/v1/enquiries`, {
+      method: 'POST',
+      headers: { apikey: K, Authorization: 'Bearer ' + K, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      body: JSON.stringify(row)
+    });
+    let mailed = false;
+    if (formspree) {
+      const r = await fetch(formspree, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(d) });
+      mailed = r.ok;
+    }
+    if (!saved.ok && !mailed) throw new Error('failed');
+    f.reset(); msg.textContent = 'Thanks, enquiry received. I will reply within a day.';
+  } catch {
+    msg.textContent = 'Something went wrong. Please email hello@worldeventphotography.com instead.';
+  }
+  btn.disabled = false;
+});

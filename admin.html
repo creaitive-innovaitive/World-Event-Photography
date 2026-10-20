@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Admin — World Event Photography</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;1,9..144,300&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<main class="box" id="login">
+  <h1>Admin</h1>
+  <p>Enter your email and I'll send you a sign-in link.</p>
+  <form id="loginForm"><input type="email" id="email" placeholder="you@example.com" required autocomplete="email"><button>Send link</button></form>
+  <p class="msg" id="loginMsg" role="status"></p>
+</main>
+
+<div id="app" hidden>
+  <header class="bar"><b>WEP Admin</b><span id="who"></span><button id="out" class="ghost">Sign out</button></header>
+  <nav class="tabs"><button data-tab="enq" class="on">Enquiries</button><button data-tab="blk">Blocked dates</button></nav>
+
+  <section id="enq" class="pane">
+    <div class="filters">
+      <button data-f="all" class="on">All</button><button data-f="new">New</button><button data-f="confirmed">Confirmed</button><button data-f="declined">Declined</button>
+    </div>
+    <div id="list"></div>
+  </section>
+
+  <section id="blk" class="pane" hidden>
+    <p class="hint">Click a date to block or unblock it. Blocked dates are greyed out on the public booking calendar.</p>
+    <div class="acal" id="acal"></div>
+    <h3>Blocked dates</h3>
+    <ul id="blocked"></ul>
+  </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>

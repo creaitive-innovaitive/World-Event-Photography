@@ -200,3 +200,5 @@ section{position:relative}
 .cal-grid button.today{outline:1px solid #b07a1d}
 .cal-grid button.sel{background:var(--ink);color:var(--paper)}
 .cal-note{font-size:.85rem;margin-top:.8rem!important}
+.form-msg{font-size:.9rem;margin-top:.4rem;min-height:1.4em;text-transform:none;letter-spacing:0;font-weight:400}
+.foot a:hover{color:var(--gold)}
