@@ -115,7 +115,9 @@ section{position:relative}
 .cur{display:flex;gap:8px;flex-wrap:wrap;margin:1rem 0 2.5rem}
 .cur button{background:none;border:1px solid rgba(255,255,255,.2);color:var(--paper);padding:7px 16px;border-radius:99px;font:400 .8rem var(--sans);cursor:pointer;transition:.2s}
 .cur button.on,.cur button:hover{border-color:var(--gold);color:var(--gold)}
-.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.card li a{color:var(--gold)}
+@media (max-width:1100px){.cards{grid-template-columns:repeat(2,1fr)}}
 .card{border:1px solid rgba(255,255,255,.12);padding:36px 30px;border-radius:6px;transition:transform .4s,border-color .4s}
 .card:hover{transform:translateY(-6px);border-color:var(--gold)}
 .card.hot{background:linear-gradient(160deg,rgba(217,164,65,.14),transparent)}
