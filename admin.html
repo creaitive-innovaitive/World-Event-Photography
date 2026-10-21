@@ -10,6 +10,7 @@
 </head>
 <body>
 <main class="box" id="login">
+  <a href="index.html" class="back">← Back to website</a>
   <h1>Admin</h1>
   <p>Enter your email and I'll send you a sign-in link.</p>
   <form id="loginForm"><input type="email" id="email" placeholder="you@example.com" required autocomplete="email"><button>Send link</button></form>
@@ -17,7 +18,7 @@
 </main>
 
 <div id="app" hidden>
-  <header class="bar"><b>WEP Admin</b><span id="who"></span><button id="out" class="ghost">Sign out</button></header>
+  <header class="bar"><a href="index.html" class="back">← Back to website</a><b>WEP Admin</b><span id="who"></span><button id="out" class="ghost">Sign out</button></header>
   <nav class="tabs"><button data-tab="enq" class="on">Enquiries</button><button data-tab="blk">Blocked dates</button></nav>
 
   <section id="enq" class="pane">

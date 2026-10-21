@@ -38,3 +38,6 @@ input{font:inherit;padding:12px 14px;border-radius:6px;border:1px solid var(--li
 #blocked{list-style:none;margin-top:10px}
 #blocked li{display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid var(--line)}
 h3{margin:2rem 0 .5rem;font-size:1.5rem}
+.back{color:var(--gold);text-decoration:none;font-size:.85rem;display:inline-block;margin-bottom:1rem}
+.bar .back{margin:0}
+.back:hover{text-decoration:underline}

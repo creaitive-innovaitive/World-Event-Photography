@@ -202,3 +202,5 @@ section{position:relative}
 .cal-note{font-size:.85rem;margin-top:.8rem!important}
 .form-msg{font-size:.9rem;margin-top:.4rem;min-height:1.4em;text-transform:none;letter-spacing:0;font-weight:400}
 .foot a:hover{color:var(--gold)}
+#menu .adm{opacity:.5;font-size:.75rem;letter-spacing:.14em;text-transform:uppercase}
+#menu .adm:hover{opacity:1;color:var(--gold)}
