@@ -49,18 +49,26 @@ function renderEnq() {
       ${e.message ? `<p>${esc(e.message)}</p>` : ''}
       <div class="row-actions">
         <button data-id="${e.id}" data-s="confirmed">Confirm</button><button data-id="${e.id}" data-s="declined">Decline</button><button data-id="${e.id}" data-s="new">Reset</button>
-        ${e.event_date && !blocked.has(e.event_date) && e.status === 'confirmed' ? `<button data-block="${e.event_date}">Block date</button>` : ''}
         <a href="mailto:${esc(e.email)}?subject=Your%20photography%20enquiry">Reply</a>
         <button data-del="${e.id}">Delete</button>
       </div>
     </article>`).join('') : '<p class="hint">Nothing here yet.</p>';
 }
+// keep blocked_dates in step with confirmed enquiries
+async function syncDate(date) {
+  if (!date) return;
+  const { data } = await db.from('enquiries').select('id').eq('event_date', date).eq('status', 'confirmed').limit(1);
+  if (data && data.length) await db.from('blocked_dates').upsert({ event_date: date });
+  else await db.from('blocked_dates').delete().eq('event_date', date);
+}
 $('#list').addEventListener('click', async e => {
   const b = e.target.closest('button'); if (!b) return;
-  if (b.dataset.s) await db.from('enquiries').update({ status: b.dataset.s }).eq('id', b.dataset.id);
-  else if (b.dataset.del) { if (!confirm('Delete this enquiry permanently?')) return; await db.from('enquiries').delete().eq('id', b.dataset.del); }
-  else if (b.dataset.block) { await db.from('blocked_dates').upsert({ event_date: b.dataset.block }); await loadBlocked(); }
-  loadEnquiries();
+  const id = b.dataset.id || b.dataset.del, row = enquiries.find(x => x.id === id);
+  if (b.dataset.s) await db.from('enquiries').update({ status: b.dataset.s }).eq('id', id);
+  else if (b.dataset.del) { if (!confirm('Delete this enquiry permanently?')) return; await db.from('enquiries').delete().eq('id', id); }
+  else return;
+  await syncDate(row && row.event_date);
+  await loadBlocked(); loadEnquiries();
 });
 
 async function loadBlocked() {
