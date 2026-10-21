@@ -54,12 +54,13 @@ function renderEnq() {
       </div>
     </article>`).join('') : '<p class="hint">Nothing here yet.</p>';
 }
-// keep blocked_dates in step with confirmed enquiries
+// Confirmed enquiries auto-block their date (note = 'enquiry'). Manual blocks have no note
+// and are never freed by an enquiry changing.
 async function syncDate(date) {
   if (!date) return;
   const { data } = await db.from('enquiries').select('id').eq('event_date', date).eq('status', 'confirmed').limit(1);
-  if (data && data.length) await db.from('blocked_dates').upsert({ event_date: date });
-  else await db.from('blocked_dates').delete().eq('event_date', date);
+  if (data && data.length) await db.from('blocked_dates').upsert({ event_date: date, note: 'enquiry' }, { onConflict: 'event_date', ignoreDuplicates: true });
+  else await db.from('blocked_dates').delete().eq('event_date', date).eq('note', 'enquiry');
 }
 $('#list').addEventListener('click', async e => {
   const b = e.target.closest('button'); if (!b) return;
