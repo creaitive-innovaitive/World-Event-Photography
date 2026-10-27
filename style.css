@@ -207,3 +207,7 @@ section{position:relative}
 #menu .adm{opacity:.5;font-size:.75rem;letter-spacing:.14em;text-transform:uppercase}
 #menu .adm:hover{opacity:1;color:var(--gold)}
 .masonry .pano{column-span:all;margin-top:4px}
+.masonry figure{position:relative}
+.masonry figcaption{position:absolute;left:0;right:0;bottom:0;padding:34px 14px 10px;background:linear-gradient(transparent,rgba(0,0,0,.75));font:italic 300 1rem var(--serif);opacity:0;transform:translateY(6px);transition:.4s;pointer-events:none}
+.masonry figure:hover figcaption{opacity:1;transform:none}
+@media (hover:none){.masonry figcaption{opacity:1;transform:none}}
