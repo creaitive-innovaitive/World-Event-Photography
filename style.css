@@ -206,3 +206,4 @@ section{position:relative}
 .foot a:hover{color:var(--gold)}
 #menu .adm{opacity:.5;font-size:.75rem;letter-spacing:.14em;text-transform:uppercase}
 #menu .adm:hover{opacity:1;color:var(--gold)}
+.masonry .pano{column-span:all;margin-top:4px}
