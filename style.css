@@ -211,3 +211,6 @@ section{position:relative}
 .masonry figcaption{position:absolute;left:0;right:0;bottom:0;padding:34px 14px 10px;background:linear-gradient(transparent,rgba(0,0,0,.75));font:italic 300 1rem var(--serif);opacity:0;transform:translateY(6px);transition:.4s;pointer-events:none}
 .masonry figure:hover figcaption{opacity:1;transform:none}
 @media (hover:none){.masonry figcaption{opacity:1;transform:none}}
+.brand{display:flex;align-items:center;gap:12px}
+.brand img{border-radius:8px}
+.brand span{margin-left:0}
