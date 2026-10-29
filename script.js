@@ -20,7 +20,7 @@ const io = new IntersectionObserver(es => es.forEach(e => {
 $$('.reveal').forEach((el, i) => { el.style.transitionDelay = (i % 4) * 90 + 'ms'; io.observe(el); });
 
 // hero slideshow
-const slides = $$('.hero-bg .slide');
+const slides = $$('.hero-bg img');
 if (!still && slides.length > 1) {
   let cur = 0;
   setInterval(() => {
