@@ -19,6 +19,17 @@ const io = new IntersectionObserver(es => es.forEach(e => {
 }), { threshold: .12 });
 $$('.reveal').forEach((el, i) => { el.style.transitionDelay = (i % 4) * 90 + 'ms'; io.observe(el); });
 
+// hero slideshow
+const slides = $$('.hero-bg img');
+if (!still && slides.length > 1) {
+  let cur = 0;
+  setInterval(() => {
+    slides[cur].classList.remove('on');
+    cur = (cur + 1) % slides.length;
+    slides[cur].classList.add('on');
+  }, 5000);
+}
+
 // parallax + nav state + horizontal scroll
 const para = $$('[data-parallax]');
 const hs = $('#hscroll'), track = $('#hsTrack');
