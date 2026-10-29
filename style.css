@@ -63,9 +63,9 @@ section{position:relative}
 @keyframes cue{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
 
 /* marquee */
-.marquee{overflow:hidden;border-block:1px solid rgba(255,255,255,.12);padding:20px 0;background:var(--ink)}
-.track{display:flex;gap:3rem;width:max-content;animation:mq 40s linear infinite;font:italic 300 clamp(1.4rem,3vw,2.4rem) var(--serif)}
-.track span::after{content:"✦";color:var(--gold);margin-left:3rem;font-size:.6em;vertical-align:middle}
+.marquee{overflow:hidden;border-block:1px solid rgba(255,255,255,.12);padding:12px 0;background:var(--ink)}
+.track{display:flex;gap:2rem;width:max-content;animation:mq 40s linear infinite;font:italic 300 clamp(1rem,1.7vw,1.4rem) var(--serif)}
+.track span::after{content:"✦";color:var(--gold);margin-left:2rem;font-size:.6em;vertical-align:middle}
 @keyframes mq{to{transform:translateX(-50%)}}
 
 /* intro */
