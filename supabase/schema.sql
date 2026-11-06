@@ -1,4 +1,4 @@
--- Run once in Supabase: SQL Editor -> New query -> paste -> Run.
+-- Safe to re-run. Run in Supabase: SQL Editor -> New query -> paste -> Run.
 
 create table if not exists wep_admins (email text primary key);
 insert into wep_admins (email) values ('fourheed@outlook.com'), ('gbyatt@gmail.com')
@@ -33,14 +33,22 @@ alter table enquiries enable row level security;
 alter table blocked_dates enable row level security;
 
 -- public site: submit an enquiry (insert only, cannot read any back) and see blocked dates
+drop policy if exists "anyone can submit enquiry" on enquiries;
 create policy "anyone can submit enquiry" on enquiries for insert to anon, authenticated
   with check (status = 'new');
+drop policy if exists "anyone can read blocked dates" on blocked_dates;
 create policy "anyone can read blocked dates" on blocked_dates for select to anon, authenticated using (true);
 
 -- admins only
+drop policy if exists "admins read enquiries" on enquiries;
 create policy "admins read enquiries" on enquiries for select to authenticated using (wep_is_admin());
+drop policy if exists "admins update enquiries" on enquiries;
 create policy "admins update enquiries" on enquiries for update to authenticated using (wep_is_admin()) with check (wep_is_admin());
+drop policy if exists "admins delete enquiries" on enquiries;
 create policy "admins delete enquiries" on enquiries for delete to authenticated using (wep_is_admin());
+drop policy if exists "admins insert blocked" on blocked_dates;
 create policy "admins insert blocked" on blocked_dates for insert to authenticated with check (wep_is_admin());
+drop policy if exists "admins update blocked" on blocked_dates;
 create policy "admins update blocked" on blocked_dates for update to authenticated using (wep_is_admin()) with check (wep_is_admin());
+drop policy if exists "admins delete blocked" on blocked_dates;
 create policy "admins delete blocked" on blocked_dates for delete to authenticated using (wep_is_admin());
