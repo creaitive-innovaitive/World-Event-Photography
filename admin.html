@@ -22,7 +22,7 @@
 
 <div id="app" hidden>
   <header class="bar"><a href="index.html" class="back">← Back to website</a><b>WEP Admin</b><span id="who"></span><button id="out" class="ghost">Sign out</button></header>
-  <nav class="tabs"><button data-tab="enq" class="on">Enquiries</button><button data-tab="blk">Blocked dates</button></nav>
+  <nav class="tabs"><button data-tab="enq" class="on">Enquiries</button><button data-tab="crm:customers">Customers</button><button data-tab="crm:orders">Orders</button><button data-tab="crm:events">Events</button><button data-tab="crm:payments">Payments</button><button data-tab="crm:services">Services</button><button data-tab="blk">Blocked dates</button></nav>
 
   <section id="enq" class="pane">
     <div class="filters">
@@ -38,10 +38,18 @@
     <h3>Blocked dates</h3>
     <ul id="blocked"></ul>
   </section>
+
+  <section id="crm" class="pane" hidden>
+    <div class="toolbar"><input type="search" id="crmSearch" placeholder="Search"><button id="crmNew">New</button></div>
+    <div id="crmStats" class="stats"></div>
+    <div class="tbl"><table id="crmTable"></table></div>
+  </section>
+  <dialog id="crmDlg"><form id="crmForm"></form></dialog>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
 <script src="admin.js"></script>
+<script src="crm.js"></script>
 </body>
 </html>

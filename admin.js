@@ -29,7 +29,9 @@ start();
 
 $$('.tabs button').forEach(b => b.onclick = () => {
   $$('.tabs button').forEach(x => x.classList.toggle('on', x === b));
-  $('#enq').hidden = b.dataset.tab !== 'enq'; $('#blk').hidden = b.dataset.tab !== 'blk';
+  const t = b.dataset.tab;
+  $('#enq').hidden = t !== 'enq'; $('#blk').hidden = t !== 'blk'; $('#crm').hidden = !t.startsWith('crm:');
+  if (t.startsWith('crm:')) openEntity(t.slice(4));
 });
 $$('.filters button').forEach(b => b.onclick = () => {
   filter = b.dataset.f; $$('.filters button').forEach(x => x.classList.toggle('on', x === b)); renderEnq();
@@ -50,6 +52,7 @@ function renderEnq() {
       <div class="row-actions">
         <button data-id="${e.id}" data-s="confirmed">Confirm</button><button data-id="${e.id}" data-s="declined">Decline</button><button data-id="${e.id}" data-s="new">Reset</button>
         <a href="mailto:${esc(e.email)}?subject=Your%20photography%20enquiry">Reply</a>
+        <button data-cust="${e.id}">Add as customer</button>
         <button data-del="${e.id}">Delete</button>
       </div>
     </article>`).join('') : '<p class="hint">Nothing here yet.</p>';
@@ -64,7 +67,8 @@ async function syncDate(date) {
 }
 $('#list').addEventListener('click', async e => {
   const b = e.target.closest('button'); if (!b) return;
-  const id = b.dataset.id || b.dataset.del, row = enquiries.find(x => x.id === id);
+  const id = b.dataset.id || b.dataset.del || b.dataset.cust, row = enquiries.find(x => x.id === id);
+  if (b.dataset.cust) return makeCustomer(row, b);
   if (b.dataset.s) await db.from('enquiries').update({ status: b.dataset.s }).eq('id', id);
   else if (b.dataset.del) { if (!confirm('Delete this enquiry permanently?')) return; await db.from('enquiries').delete().eq('id', id); }
   else return;
