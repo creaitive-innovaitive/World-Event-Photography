@@ -23,7 +23,7 @@ create table if not exists blocked_dates (
 );
 
 -- security definer so the admins table itself stays unreadable from the browser
-create or replace function is_admin() returns boolean
+create or replace function wep_is_admin() returns boolean
 language sql stable security definer set search_path = public as $$
   select exists (select 1 from admins where email = lower(auth.jwt() ->> 'email'));
 $$;
@@ -38,9 +38,9 @@ create policy "anyone can submit enquiry" on enquiries for insert to anon, authe
 create policy "anyone can read blocked dates" on blocked_dates for select to anon, authenticated using (true);
 
 -- admins only
-create policy "admins read enquiries" on enquiries for select to authenticated using (is_admin());
-create policy "admins update enquiries" on enquiries for update to authenticated using (is_admin()) with check (is_admin());
-create policy "admins delete enquiries" on enquiries for delete to authenticated using (is_admin());
-create policy "admins insert blocked" on blocked_dates for insert to authenticated with check (is_admin());
-create policy "admins update blocked" on blocked_dates for update to authenticated using (is_admin()) with check (is_admin());
-create policy "admins delete blocked" on blocked_dates for delete to authenticated using (is_admin());
+create policy "admins read enquiries" on enquiries for select to authenticated using (wep_is_admin());
+create policy "admins update enquiries" on enquiries for update to authenticated using (wep_is_admin()) with check (wep_is_admin());
+create policy "admins delete enquiries" on enquiries for delete to authenticated using (wep_is_admin());
+create policy "admins insert blocked" on blocked_dates for insert to authenticated with check (wep_is_admin());
+create policy "admins update blocked" on blocked_dates for update to authenticated using (wep_is_admin()) with check (wep_is_admin());
+create policy "admins delete blocked" on blocked_dates for delete to authenticated using (wep_is_admin());

@@ -75,6 +75,6 @@ begin
   foreach t in array array['customers','events','services','orders','customer_orders','payments'] loop
     execute format('alter table %I enable row level security', t);
     execute format('drop policy if exists "admins all" on %I', t);
-    execute format('create policy "admins all" on %I for all to authenticated using (is_admin()) with check (is_admin())', t);
+    execute format('create policy "admins all" on %I for all to authenticated using (wep_is_admin()) with check (wep_is_admin())', t);
   end loop;
 end $$;

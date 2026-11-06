@@ -15,7 +15,7 @@ $('#out').onclick = async () => { await db.auth.signOut(); location.reload(); };
 async function start() {
   const { data: { session } } = await db.auth.getSession();
   if (!session) return;
-  const { data: ok } = await db.rpc('is_admin');
+  const { data: ok } = await db.rpc('wep_is_admin');
   if (!ok) {
     await db.auth.signOut();
     $('#loginMsg').textContent = 'That email is not authorised for admin.';
