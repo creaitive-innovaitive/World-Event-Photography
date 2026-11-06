@@ -1,7 +1,7 @@
 -- Run once in Supabase: SQL Editor -> New query -> paste -> Run.
 
-create table if not exists admins (email text primary key);
-insert into admins (email) values ('fourheed@outlook.com'), ('gbyatt@gmail.com')
+create table if not exists wep_admins (email text primary key);
+insert into wep_admins (email) values ('fourheed@outlook.com'), ('gbyatt@gmail.com')
 on conflict do nothing;
 
 create table if not exists enquiries (
@@ -22,13 +22,13 @@ create table if not exists blocked_dates (
   created_at timestamptz not null default now()
 );
 
--- security definer so the admins table itself stays unreadable from the browser
+-- security definer so the admin table itself stays unreadable from the browser
 create or replace function wep_is_admin() returns boolean
 language sql stable security definer set search_path = public as $$
-  select exists (select 1 from admins where email = lower(auth.jwt() ->> 'email'));
+  select exists (select 1 from wep_admins where email = lower(auth.jwt() ->> 'email'));
 $$;
 
-alter table admins enable row level security;
+alter table wep_admins enable row level security;
 alter table enquiries enable row level security;
 alter table blocked_dates enable row level security;
 
