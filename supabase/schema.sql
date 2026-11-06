@@ -13,7 +13,7 @@ create table if not exists enquiries (
   event_date date,
   location text check (length(location) <= 300),
   message text check (length(message) <= 5000),
-  status text not null default 'new' check (status in ('new','confirmed','declined'))
+  status text not null default 'new' check (status in ('new','confirmed','declined','converted'))
 );
 
 create table if not exists blocked_dates (

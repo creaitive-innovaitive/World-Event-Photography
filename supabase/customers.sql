@@ -42,12 +42,33 @@ create table if not exists orders (
   id uuid primary key default gen_random_uuid(),
   created_at timestamptz not null default now(),
   order_ref text not null unique default 'WEP-' || lpad(nextval('order_ref_seq')::text, 4, '0'),
-  event_id uuid references events(id) on delete set null,
+  event_id uuid references events(id) on delete restrict,
   service_id uuid references services(id) on delete set null,
   status text not null default 'quote' check (status in ('quote','booked','completed','cancelled')),
   total_pence integer not null default 0 check (total_pence >= 0),
   notes text check (length(notes) <= 5000)
 );
+
+-- what was ordered; the order total is the sum of these
+create table if not exists order_items (
+  id uuid primary key default gen_random_uuid(),
+  order_id uuid not null references orders(id) on delete cascade,
+  service_id uuid references services(id) on delete set null,
+  description text not null check (length(description) between 1 and 300),
+  quantity integer not null default 1 check (quantity > 0),
+  unit_price_pence integer not null default 0 check (unit_price_pence >= 0)
+);
+create index if not exists order_items_order_idx on order_items (order_id);
+
+-- every order belongs to one event (not valid = applies to new/changed rows, old test rows are left alone)
+alter table orders drop constraint if exists orders_event_id_fkey;
+alter table orders add constraint orders_event_id_fkey foreign key (event_id) references events(id) on delete restrict;
+alter table orders drop constraint if exists orders_event_required;
+alter table orders add constraint orders_event_required check (event_id is not null) not valid;
+
+-- enquiries get a 'converted' status once turned into customer + event + order
+alter table enquiries drop constraint if exists enquiries_status_check;
+alter table enquiries add constraint enquiries_status_check check (status in ('new','confirmed','declined','converted'));
 
 -- many customers per order (couple, company + contact) and many orders per customer
 create table if not exists customer_orders (
@@ -72,7 +93,7 @@ create index if not exists payments_order_idx on payments (order_id);
 do $$
 declare t text;
 begin
-  foreach t in array array['customers','events','services','orders','customer_orders','payments'] loop
+  foreach t in array array['customers','events','services','orders','order_items','customer_orders','payments'] loop
     execute format('alter table %I enable row level security', t);
     execute format('drop policy if exists "admins all" on %I', t);
     execute format('create policy "admins all" on %I for all to authenticated using (wep_is_admin()) with check (wep_is_admin())', t);

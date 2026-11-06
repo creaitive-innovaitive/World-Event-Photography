@@ -52,7 +52,7 @@ function renderEnq() {
       <div class="row-actions">
         <button data-id="${e.id}" data-s="confirmed">Confirm</button><button data-id="${e.id}" data-s="declined">Decline</button><button data-id="${e.id}" data-s="new">Reset</button>
         <a href="mailto:${esc(e.email)}?subject=Your%20photography%20enquiry">Reply</a>
-        <button data-cust="${e.id}">Add as customer</button>
+        ${e.status !== 'converted' ? `<button data-cust="${e.id}">Convert to customer</button>` : ''}
         <button data-del="${e.id}">Delete</button>
       </div>
     </article>`).join('') : '<p class="hint">Nothing here yet.</p>';
@@ -61,14 +61,14 @@ function renderEnq() {
 // and are never freed by an enquiry changing.
 async function syncDate(date) {
   if (!date) return;
-  const { data } = await db.from('enquiries').select('id').eq('event_date', date).eq('status', 'confirmed').limit(1);
+  const { data } = await db.from('enquiries').select('id').eq('event_date', date).in('status', ['confirmed', 'converted']).limit(1);
   if (data && data.length) await db.from('blocked_dates').upsert({ event_date: date, note: 'enquiry' }, { onConflict: 'event_date', ignoreDuplicates: true });
   else await db.from('blocked_dates').delete().eq('event_date', date).eq('note', 'enquiry');
 }
 $('#list').addEventListener('click', async e => {
   const b = e.target.closest('button'); if (!b) return;
   const id = b.dataset.id || b.dataset.del || b.dataset.cust, row = enquiries.find(x => x.id === id);
-  if (b.dataset.cust) return makeCustomer(row, b);
+  if (b.dataset.cust) return convertEnquiry(row, b);
   if (b.dataset.s) await db.from('enquiries').update({ status: b.dataset.s }).eq('id', id);
   else if (b.dataset.del) { if (!confirm('Delete this enquiry permanently?')) return; await db.from('enquiries').delete().eq('id', id); }
   else return;
