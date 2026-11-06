@@ -15,10 +15,10 @@ $('#out').onclick = async () => { await db.auth.signOut(); location.reload(); };
 async function start() {
   const { data: { session } } = await db.auth.getSession();
   if (!session) return;
-  const { data: ok } = await db.rpc('wep_is_admin');
+  const { data: ok, error } = await db.rpc('wep_is_admin');
   if (!ok) {
     await db.auth.signOut();
-    $('#loginMsg').textContent = 'That email is not authorised for admin.';
+    $('#loginMsg').textContent = error ? 'Admin check failed: ' + error.message + ' (has supabase/schema.sql been run?)' : `${session.user.email} is not in the wep_admins table.`;
     return;
   }
   $('#login').hidden = true; $('#app').hidden = false; $('#who').textContent = session.user.email;
