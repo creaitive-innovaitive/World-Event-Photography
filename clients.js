@@ -95,7 +95,7 @@ function orderBlock(o, c) {
       <select class="r-kind">${Object.entries(KINDS).map(([k, l]) => `<option value="${k}">${l}</option>`).join('')}</select>
       <input class="r-body" placeholder="Add a request or note on their behalf"><button class="ghost sm" data-radd="${o.id}">Add</button></div>` : ''}
     <h5>Feedback</h5>${fb ? `<div class="fb"><span class="star">${stars(fb.rating)}</span>${fb.public_ok ? ' <span class="tag confirmed">OK to quote</span>' : ''}${fb.comment ? `<p>${esc(fb.comment)}</p>` : ''}</div>` : '<p class="sub">No feedback yet.</p>'}
-    <h5>Proofs</h5><p class="sub">${ph} photo${ph === 1 ? '' : 's'} · ${e.proofs_published ? 'visible to customer' : 'hidden'} <a href="#" data-oe="${e.id}">Manage photos</a></p>
+    <h5>Proofs</h5><p class="sub">${ph} photo${ph === 1 ? '' : 's'}${(() => { const n = D.photo_picks.filter(k => k.customer_id === c.id && D.photos.some(p => p.id === k.photo_id && p.event_id === e.id)).length; return n ? ` · ♥ ${n} picked` : ''; })()} · ${e.proofs_published ? 'visible to customer' : 'hidden'} <a href="#" data-oe="${e.id}">Manage photos</a></p>
   </section>`;
 }
 $('#profBody').addEventListener('click', async ev => {
@@ -131,7 +131,14 @@ function eventExtras(e) {
     ${reqs.map(r => { const o = byId('orders', r.order_id); return `<div class="rq ${r.status}"><div class="rq-top"><span>${r.day ? fdate(r.day) : 'Whole event'}</span><span class="kind">${KINDS[r.kind] || r.kind}</span><span class="kind">${esc(orderCustomers(o.id).map(c => c.name).join(', '))}</span><span class="sp"></span>${tag(r.status)}</div><p>${esc(r.body)}</p></div>`; }).join('') || '<p class="sub">None.</p>'}
     <h4 class="sec">Proof photos</h4>
     <p class="sub">Each upload makes a watermarked 1600px copy for customers and keeps the original private. Customers see them once "Proofs visible" is ticked and saved.</p>
+    <div class="sub" id="phPicks">${pickSummary(e)}</div>
     <input type="file" id="phFile" accept="image/*" multiple><div class="sub" id="phStatus"></div><div class="pgrid" id="phGrid"></div>`;
+}
+function pickSummary(e) {
+  const ids = new Set(D.photos.filter(p => p.event_id === e.id).map(p => p.id)), ks = D.photo_picks.filter(k => ids.has(k.photo_id));
+  if (!ks.length) return 'No favourites picked yet.';
+  const by = {}; ks.forEach(k => { const n = (byId('customers', k.customer_id) || {}).name || 'Customer'; by[n] = (by[n] || 0) + 1; });
+  return '♥ Picked: ' + Object.entries(by).map(([n, c]) => `${esc(n)} ${c}`).join(', ') + '. Hover a photo to see who picked it.';
 }
 async function wirePhotos(e) {
   const grid = $('#phGrid'), file = $('#phFile'); if (!grid) return;
@@ -140,7 +147,8 @@ async function wirePhotos(e) {
     const { data } = await db.storage.from('proofs').createSignedUrls(photos.map(p => p.preview_path), 3600);
     if (!grid.isConnected) return;
     const url = Object.fromEntries((data || []).map(d => [d.path, d.signedUrl]));
-    grid.innerHTML = photos.map(p => `<figure><img src="${esc(url[p.preview_path] || '')}" alt="" loading="lazy" title="${esc(p.filename || '')}"><button type="button" class="pdel" data-pdel="${p.id}" title="Delete photo">×</button></figure>`).join('');
+    const pickers = p => D.photo_picks.filter(k => k.photo_id === p.id).map(k => (byId('customers', k.customer_id) || {}).name).filter(Boolean);
+    grid.innerHTML = photos.map(p => `<figure class="${pickers(p).length ? 'picked' : ''}"><img src="${esc(url[p.preview_path] || '')}" alt="" loading="lazy" title="${esc([p.filename, pickers(p).length ? '♥ ' + pickers(p).join(', ') : ''].filter(Boolean).join(' · '))}">${pickers(p).length ? '<span class="pk">♥</span>' : ''}<button type="button" class="pdel" data-pdel="${p.id}" title="Delete photo">×</button></figure>`).join('');
   } else grid.innerHTML = '';
   grid.onclick = async ev => {
     const b = ev.target.closest('[data-pdel]'); if (!b || !confirm('Delete this photo and its original?')) return;

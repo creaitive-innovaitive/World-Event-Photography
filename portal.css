@@ -21,7 +21,11 @@
 .fbform label{display:flex;gap:8px;align-items:center;font-size:.85rem;color:var(--mute);margin-bottom:10px}
 .fbform label input{width:auto}
 .gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
-.gal button{position:relative;aspect-ratio:1;padding:0;border:0;border-radius:6px;overflow:hidden;background:var(--ink)}
+.tile{position:relative;aspect-ratio:1}
+.gal [data-photo]{width:100%;height:100%;padding:0;border:0;border-radius:6px;overflow:hidden;background:var(--ink)}
+.heart{color:var(--paper)}
+.tile .heart{position:absolute;right:6px;bottom:6px;width:34px;height:34px;padding:0;border-radius:50%;background:rgba(0,0,0,.55);border-color:transparent;font-size:1.1rem;line-height:1}
+.heart.on{color:#e8607a;border-color:#e8607a}.tile .heart.on{background:rgba(0,0,0,.75)}
 .gal img,.lb img{-webkit-user-drag:none;user-select:none;-webkit-touch-callout:none}
 .gal img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
 .gal-note{font-size:.82rem;color:var(--mute);margin-bottom:10px}

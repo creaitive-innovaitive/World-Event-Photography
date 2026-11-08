@@ -1,5 +1,5 @@
 // Customer database panel. Data lives in Supabase (see supabase/customers.sql); money is stored in pence.
-const D = { customers: [], events: [], services: [], orders: [], customer_orders: [], payments: [], order_items: [], order_requests: [], feedback: [], photos: [] };
+const D = { customers: [], events: [], services: [], orders: [], customer_orders: [], payments: [], order_items: [], order_requests: [], feedback: [], photos: [], photo_picks: [] };
 let cur = null, loaded = false, editing = null, portalReady = true;
 
 const gbp = p => '£' + ((p || 0) / 100).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -74,9 +74,9 @@ const ENT = {
 async function loadCrm() {
   const res = await Promise.all(Object.entries(ENT).map(([k, e]) => db.from(k).select('*').order(e.order[0], { ascending: e.order[1] })
     .then(r => [k, r])));
-  const [co, oi, rq, fb, ph] = await Promise.all([db.from('customer_orders').select('*'), db.from('order_items').select('*'),
-    db.from('order_requests').select('*').order('created_at'), db.from('feedback').select('*'), db.from('photos').select('*').order('created_at')]);
-  portalReady = !(rq.error || fb.error || ph.error);
+  const [co, oi, rq, fb, ph, pk] = await Promise.all([db.from('customer_orders').select('*'), db.from('order_items').select('*'),
+    db.from('order_requests').select('*').order('created_at'), db.from('feedback').select('*'), db.from('photos').select('*').order('created_at'), db.from('photo_picks').select('*')]);
+  portalReady = !(rq.error || fb.error || ph.error || pk.error); D.photo_picks = pk.data || [];
   D.order_requests = rq.data || []; D.feedback = fb.data || []; D.photos = ph.data || [];
   for (const [k, r] of res) { if (r.error) { $('#crmTable').innerHTML = `<tbody><tr><td>${esc(r.error.message)}. Has supabase/customers.sql been run?</td></tr></tbody>`; return false; } D[k] = r.data; }
   D.customer_orders = co.data || []; D.order_items = oi.data || [];

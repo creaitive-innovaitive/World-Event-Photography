@@ -12,7 +12,7 @@ const last = e => e.end_date || e.event_date;
 const KINDS = { shot: 'Shot / moment', timing: 'Timing', people: 'People', location: 'Location', other: 'Other' };
 const REQ_STATE = { open: 'Sent', noted: 'Noted', done: 'Done' };
 const ORDER_STATE = { quote: 'Quote', booked: 'Booked', completed: 'Completed', cancelled: 'Cancelled' };
-let P = null, editReq = null, urls = {}, lbSet = [], lbAt = 0;
+let P = null, editReq = null, urls = {}, lbSet = [], lbAt = 0, picks = new Set();
 
 $('#loginForm').addEventListener('submit', async e => {
   e.preventDefault();
@@ -33,7 +33,7 @@ start();
 async function load() {
   const { data, error } = await db.rpc('portal_data');
   if (error) { $('#bookings').innerHTML = `<p class="err">${esc(error.message)}</p>`; return; }
-  P = data; render();
+  P = data; picks = new Set(data ? data.picks : []); render();
 }
 function render() {
   if (!P) {
@@ -75,7 +75,8 @@ function booking(o) {
       <textarea class="r-body" maxlength="2000" placeholder="Must-have shots, timings, people to include, anything I should know…"></textarea><button data-radd="${o.id}">Add request</button></div>` : '<p class="sub">Requests are closed for this booking.</p>'}
 
     ${o.photos.length ? `<h4>Your photos</h4><p class="gal-note">Proofs from the day: low resolution and watermarked. Final images are delivered without the watermark.</p>
-      <div class="gal" data-ev="${e.id}">${o.photos.map((p, i) => `<button data-photo="${i}" data-path="${esc(p.preview_path)}" aria-label="Open photo ${i + 1}"><img alt="" draggable="false" loading="lazy" ${urls[p.preview_path] ? `src="${esc(urls[p.preview_path])}"` : ''}></button>`).join('')}</div>` : ''}
+      <div class="gal" data-ev="${e.id}">${o.photos.map((p, i) => `<div class="tile"><button data-photo="${i}" data-path="${esc(p.preview_path)}" data-id="${p.id}" aria-label="Open photo ${i + 1}"><img alt="" draggable="false" loading="lazy" ${urls[p.preview_path] ? `src="${esc(urls[p.preview_path])}"` : ''}></button><button class="heart ${picks.has(p.id) ? 'on' : ''}" data-pick="${p.id}" aria-label="Favourite">♥</button></div>`).join('')}</div>
+      <p class="gal-note pickcount" data-ev="${e.id}">${pickText(o.photos)}</p>` : ''}
 
     <h4>Feedback</h4>
     ${cancelled || !started || o.status === 'quote' ? '<p class="sub">You can leave feedback once the event has taken place.</p>' : `<div class="fbform" data-fb="${o.id}" data-rate="${fb ? fb.rating : 0}">
@@ -89,6 +90,7 @@ function booking(o) {
 $('#bookings').addEventListener('click', async ev => {
   const b = ev.target.closest('button'); if (!b) return;
   const d = b.dataset, form = b.closest('.rqform,.fbform');
+  if (d.pick) return togglePick(d.pick);
   if (d.photo !== undefined) return openLightbox(b.closest('.gal'), +d.photo);
   if (d.star) { form.dataset.rate = d.star; form.querySelectorAll('[data-star]').forEach(s => s.classList.toggle('on', +s.dataset.star <= +d.star)); return; }
   if (d.redit) { editReq = d.redit; return render(); }
@@ -130,23 +132,35 @@ function renderProfile() {
   };
 }
 
+const pickText = photos => { const n = photos.filter(p => picks.has(p.id)).length; return n ? `${n} favourite${n > 1 ? 's' : ''} picked. Tap ♥ on any photo to add or change one.` : 'Tap ♥ on the photos you like most, to help choose prints and the final edit.'; };
+async function togglePick(id) {
+  const on = !picks.has(id);
+  const { error } = on ? await db.from('photo_picks').insert({ photo_id: id, customer_id: P.customer.id }) : await db.from('photo_picks').delete().eq('photo_id', id).eq('customer_id', P.customer.id);
+  if (error) return alert('Could not save: ' + error.message);
+  on ? picks.add(id) : picks.delete(id);
+  $$(`[data-pick="${id}"]`).forEach(h => h.classList.toggle('on', on));
+  $$('.pickcount').forEach(el => { const o = P.orders.find(x => x.event.id === el.dataset.ev); if (o) el.textContent = pickText(o.photos); });
+  if (lb.open && lbSet[lbAt].id === id) showLb();
+}
+
 // Proofs are private; signed URLs expire after an hour.
 async function fillPhotos() {
-  const paths = [...new Set($$('.gal button').map(b => b.dataset.path))].filter(p => !urls[p]);
+  const paths = [...new Set($$('.gal [data-photo]').map(b => b.dataset.path))].filter(p => !urls[p]);
   if (paths.length) {
     const { data } = await db.storage.from('proofs').createSignedUrls(paths, 3600);
     (data || []).forEach(d => { if (d.signedUrl) urls[d.path] = d.signedUrl; });
   }
-  $$('.gal button').forEach(b => { const i = b.querySelector('img'); if (urls[b.dataset.path] && !i.src) i.src = urls[b.dataset.path]; });
+  $$('.gal [data-photo]').forEach(b => { const i = b.querySelector('img'); if (urls[b.dataset.path] && !i.src) i.src = urls[b.dataset.path]; });
 }
 
 // Deterrents only (no right-click, no drag, a shield over the image). The real protection is that the file
 // customers can reach is already watermarked and small; originals are in a bucket they cannot read.
 const lb = $('#lb');
-function openLightbox(gal, i) { lbSet = [...gal.querySelectorAll('button')].map(b => b.dataset.path); lbAt = i; showLb(); lb.showModal(); }
-function showLb() { $('#lbImg').src = urls[lbSet[lbAt]] || ''; $('#lbCount').textContent = `${lbAt + 1} / ${lbSet.length}`; }
+function openLightbox(gal, i) { lbSet = [...gal.querySelectorAll('[data-photo]')].map(b => ({ path: b.dataset.path, id: b.dataset.id })); lbAt = i; showLb(); lb.showModal(); }
+function showLb() { $('#lbImg').src = urls[lbSet[lbAt].path] || ''; $('#lbCount').textContent = `${lbAt + 1} / ${lbSet.length}`; $('#lbHeart').classList.toggle('on', picks.has(lbSet[lbAt].id)); }
 const step = n => { lbAt = (lbAt + n + lbSet.length) % lbSet.length; showLb(); };
-$('#lbPrev').onclick = () => step(-1); $('#lbNext').onclick = () => step(1); $('#lbClose').onclick = () => lb.close();
+$('#lbPrev').onclick = () => step(-1); $('#lbNext').onclick = () => step(1); $('#lbHeart').onclick = () => togglePick(lbSet[lbAt].id);
+$('#lbClose').onclick = () => lb.close();
 lb.addEventListener('keydown', e => { if (e.key === 'ArrowLeft') step(-1); if (e.key === 'ArrowRight') step(1); });
 lb.addEventListener('click', e => { if (e.target === lb) lb.close(); });
 document.addEventListener('contextmenu', e => { if (e.target.closest('.gal, .lb')) e.preventDefault(); });

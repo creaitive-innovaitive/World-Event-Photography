@@ -45,6 +45,14 @@ create table if not exists photos (
 );
 create index if not exists photos_event_idx on photos (event_id);
 
+-- customers' favourites, for choosing prints / the final edit
+create table if not exists photo_picks (
+  photo_id uuid not null references photos(id) on delete cascade,
+  customer_id uuid not null references customers(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (photo_id, customer_id)
+);
+
 -- who is signed in, as a customer. security definer so customers never need read access to core tables.
 create or replace function wep_my_customer_id() returns uuid
 language sql stable security definer set search_path = public as $$
@@ -61,10 +69,18 @@ language sql stable security definer set search_path = public as $$
     where p.preview_path = path and e.proofs_published and o.id in (select wep_my_order_ids()));
 $$;
 
+create or replace function wep_can_pick_photo(pid uuid) returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1 from photos p join events e on e.id = p.event_id join orders o on o.event_id = e.id
+    where p.id = pid and e.proofs_published and o.id in (select wep_my_order_ids()));
+$$;
+
 -- Everything the portal shows, in one call, with only customer-safe columns (no internal notes).
 create or replace function portal_data() returns jsonb
 language sql stable security definer set search_path = public as $$
   select jsonb_build_object(
+    'picks', coalesce((select jsonb_agg(photo_id) from photo_picks where customer_id = c.id), '[]'::jsonb),
     'customer', jsonb_build_object('id', c.id, 'name', c.name, 'email', c.email, 'phone', c.phone, 'company', c.company, 'address', c.address, 'marketing_ok', c.marketing_ok),
     'orders', coalesce((
       select jsonb_agg(jsonb_build_object(
@@ -105,11 +121,12 @@ grant execute on function portal_data(), portal_update_profile(text, text, text,
 alter table order_requests enable row level security;
 alter table feedback enable row level security;
 alter table photos enable row level security;
+alter table photo_picks enable row level security;
 
 do $$
 declare t text;
 begin
-  foreach t in array array['order_requests','feedback','photos'] loop
+  foreach t in array array['order_requests','feedback','photos','photo_picks'] loop
     execute format('drop policy if exists "admins all" on %I', t);
     execute format('create policy "admins all" on %I for all to authenticated using (wep_is_admin()) with check (wep_is_admin())', t);
   end loop;
@@ -137,6 +154,14 @@ create policy "customer adds feedback" on feedback for insert to authenticated
 drop policy if exists "customer edits feedback" on feedback;
 create policy "customer edits feedback" on feedback for update to authenticated
   using (customer_id = wep_my_customer_id()) with check (customer_id = wep_my_customer_id() and order_id in (select wep_my_order_ids()));
+
+drop policy if exists "customer reads own picks" on photo_picks;
+create policy "customer reads own picks" on photo_picks for select to authenticated using (customer_id = wep_my_customer_id());
+drop policy if exists "customer adds picks" on photo_picks;
+create policy "customer adds picks" on photo_picks for insert to authenticated
+  with check (customer_id = wep_my_customer_id() and wep_can_pick_photo(photo_id));
+drop policy if exists "customer removes picks" on photo_picks;
+create policy "customer removes picks" on photo_picks for delete to authenticated using (customer_id = wep_my_customer_id());
 
 -- storage: originals never leave the admin side; proofs are readable only by the event's customers once published
 insert into storage.buckets (id, name, public) values ('proofs', 'proofs', false), ('originals', 'originals', false)
