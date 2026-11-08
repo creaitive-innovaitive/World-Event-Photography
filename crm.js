@@ -1,6 +1,6 @@
 // Customer database panel. Data lives in Supabase (see supabase/customers.sql); money is stored in pence.
-const D = { customers: [], events: [], services: [], orders: [], customer_orders: [], payments: [], order_items: [] };
-let cur = null, loaded = false, editing = null;
+const D = { customers: [], events: [], services: [], orders: [], customer_orders: [], payments: [], order_items: [], order_requests: [], feedback: [], photos: [] };
+let cur = null, loaded = false, editing = null, portalReady = true;
 
 const gbp = p => '£' + ((p || 0) / 100).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fdate = d => d ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
@@ -21,6 +21,7 @@ const ENT = {
     cols: [['Name', c => `<b>${esc(c.name)}</b>${c.company ? `<div class="sub">${esc(c.company)}</div>` : ''}`],
       ['Contact', c => `${esc(c.email || '')}<div class="sub">${esc(c.phone || '')}</div>`],
       ['Orders', c => D.customer_orders.filter(l => l.customer_id === c.id).length, 'num'],
+      ['Next event', c => { const e = nextEvent(c); return e ? `${fdate(e.event_date)}<div class="sub">${esc(e.title)}</div>` : ''; }],
       ['Spent', c => gbp(D.customer_orders.filter(l => l.customer_id === c.id && l.role === 'primary').reduce((s, l) => s + paid(l.order_id), 0)), 'num']],
     text: c => [c.name, c.email, c.phone, c.company, c.notes].join(' '),
     stats: rows => [['Customers', rows.length], ['Repeat', rows.filter(c => D.customer_orders.filter(l => l.customer_id === c.id).length > 1).length]],
@@ -44,10 +45,10 @@ const ENT = {
   events: {
     title: 'Event', order: ['event_date', false],
     fields: [{ k: 'title', l: 'Title', req: 1 }, { k: 'event_type', l: 'Type', t: 'select', opts: ['wedding', 'corporate', 'portrait', 'family', 'party', 'other'] },
-      { k: 'event_date', l: 'Date', t: 'date' }, { k: 'start_time', l: 'Start', t: 'time' }, { k: 'end_time', l: 'End', t: 'time' }, { k: 'location', l: 'Location' },
-      { k: 'status', l: 'Status', t: 'select', opts: ['scheduled', 'shot', 'delivered', 'cancelled'] }, { k: 'notes', l: 'Notes', t: 'textarea' }],
+      { k: 'event_date', l: 'Date (first day)', t: 'date' }, { k: 'end_date', l: 'Last day (multi-day events only)', t: 'date' }, { k: 'start_time', l: 'Start', t: 'time' }, { k: 'end_time', l: 'End', t: 'time' }, { k: 'location', l: 'Location' },
+      { k: 'status', l: 'Status', t: 'select', opts: ['scheduled', 'shot', 'delivered', 'cancelled'] }, { k: 'proofs_published', l: 'Proofs visible to customers in their portal', t: 'check' }, { k: 'notes', l: 'Notes', t: 'textarea' }],
     cols: [['Event', e => `<b>${esc(e.title)}</b><div class="sub">${esc(e.event_type || '')}</div>`],
-      ['Date', e => `${fdate(e.event_date)}<div class="sub">${esc((e.start_time || '').slice(0, 5))}${e.end_time ? '–' + e.end_time.slice(0, 5) : ''}</div>`],
+      ['Date', e => `${fdate(e.event_date)}${e.end_date ? ' – ' + fdate(e.end_date) : ''}<div class="sub">${esc((e.start_time || '').slice(0, 5))}${e.end_time ? '–' + e.end_time.slice(0, 5) : ''}</div>`],
       ['Location', e => esc(e.location || '')], ['Status', e => tag(e.status)],
       ['Customers', e => esc(D.orders.filter(o => o.event_id === e.id).flatMap(o => orderCustomers(o.id)).map(c => c.name).join(', '))]],
     text: e => [e.title, e.location, e.event_type, e.notes].join(' '),
@@ -73,7 +74,10 @@ const ENT = {
 async function loadCrm() {
   const res = await Promise.all(Object.entries(ENT).map(([k, e]) => db.from(k).select('*').order(e.order[0], { ascending: e.order[1] })
     .then(r => [k, r])));
-  const [co, oi] = await Promise.all([db.from('customer_orders').select('*'), db.from('order_items').select('*')]);
+  const [co, oi, rq, fb, ph] = await Promise.all([db.from('customer_orders').select('*'), db.from('order_items').select('*'),
+    db.from('order_requests').select('*').order('created_at'), db.from('feedback').select('*'), db.from('photos').select('*').order('created_at')]);
+  portalReady = !(rq.error || fb.error || ph.error);
+  D.order_requests = rq.data || []; D.feedback = fb.data || []; D.photos = ph.data || [];
   for (const [k, r] of res) { if (r.error) { $('#crmTable').innerHTML = `<tbody><tr><td>${esc(r.error.message)}. Has supabase/customers.sql been run?</td></tr></tbody>`; return false; } D[k] = r.data; }
   D.customer_orders = co.data || []; D.order_items = oi.data || [];
   return true;
@@ -92,7 +96,7 @@ function renderCrm() {
     `<tr data-id="${r.id}">${e.cols.map(c => `<td class="${c[2] || ''}">${c[1](r)}</td>`).join('')}</tr>`).join('') || `<tr><td colspan="${e.cols.length}" class="hint">Nothing here yet.</td></tr>`}</tbody>`;
 }
 $('#crmSearch').addEventListener('input', () => renderCrm());
-$('#crmTable').addEventListener('click', ev => { const tr = ev.target.closest('tr[data-id]'); if (tr) openForm(byId(cur, tr.dataset.id)); });
+$('#crmTable').addEventListener('click', ev => { const tr = ev.target.closest('tr[data-id]'); if (!tr) return; const r = byId(cur, tr.dataset.id); cur === 'customers' ? openProfile(r) : openForm(r); });
 $('#crmNew').onclick = () => openForm(null);
 
 function openForm(row, preset = {}) {
@@ -119,6 +123,7 @@ function openForm(row, preset = {}) {
   // picking a service fills an empty/zero total
   if (cur === 'orders') form.service_id.onchange = () => { const s = byId('services', form.service_id.value); if (s && !Number(form.total_pence.value)) form.total_pence.value = s.price_pence / 100; };
   if (cur === 'orders') wireOrder(form, row);
+  if (cur === 'events' && row) wirePhotos(row);
   const rn = $('#relNew'); if (rn) rn.onclick = () => { $('#crmDlg').close(); newOrderFor(row); };
   $('#crmCancel').onclick = () => $('#crmDlg').close();
   if (row) $('#crmDel').onclick = async () => {
@@ -208,7 +213,7 @@ const orderLines = list => list.length ? `<table class="rel">${list.map(o => `<t
 const RELATED = {
   customers: c => { const os = D.customer_orders.filter(l => l.customer_id === c.id).map(l => byId('orders', l.order_id)).filter(Boolean);
     return `<h4 class="sec">Orders</h4>${orderLines(os)}<p class="sub">Lifetime spend ${gbp(os.filter(o => o.status !== 'cancelled').reduce((t, o) => t + paid(o.id), 0))}</p>`; },
-  events: e => `<h4 class="sec">Orders for this event</h4>${orderLines(D.orders.filter(o => o.event_id === e.id))}<button type="button" class="ghost" id="relNew">+ New order for this event</button>`,
+  events: e => `<h4 class="sec">Orders for this event</h4>${orderLines(D.orders.filter(o => o.event_id === e.id))}<button type="button" class="ghost" id="relNew">+ New order for this event</button>${eventExtras(e)}`,
 };
 function newOrderFor(ev) {
   $('[data-tab="crm:orders"]').click();

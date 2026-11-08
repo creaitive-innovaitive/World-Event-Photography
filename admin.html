@@ -22,7 +22,7 @@
 
 <div id="app" hidden>
   <header class="bar"><a href="index.html" class="back">← Back to website</a><b>WEP Admin</b><span id="who"></span><button id="out" class="ghost">Sign out</button></header>
-  <nav class="tabs"><button data-tab="enq" class="on">Enquiries</button><button data-tab="crm:customers">Customers</button><button data-tab="crm:orders">Orders</button><button data-tab="crm:events">Events</button><button data-tab="crm:payments">Payments</button><button data-tab="crm:services">Services</button><button data-tab="blk">Blocked dates</button></nav>
+  <nav class="tabs"><button data-tab="enq" class="on">Enquiries</button><button data-tab="up">Upcoming</button><button data-tab="crm:customers">Customers</button><button data-tab="crm:orders">Orders</button><button data-tab="crm:events">Events</button><button data-tab="crm:payments">Payments</button><button data-tab="crm:services">Services</button><button data-tab="blk">Blocked dates</button></nav>
 
   <section id="enq" class="pane">
     <div class="filters">
@@ -30,6 +30,11 @@
     </div>
     <p class="hint">Confirming or converting an enquiry blocks its date on the public calendar. Declining, resetting or deleting it frees the date again, but dates you blocked by hand stay blocked.</p>
     <div id="list"></div>
+  </section>
+
+  <section id="up" class="pane" hidden>
+    <div class="filters"><button data-uf="next" class="on">Upcoming</button><button data-uf="past">Past</button></div>
+    <div id="upList"></div>
   </section>
 
   <section id="blk" class="pane" hidden>
@@ -45,11 +50,13 @@
     <div class="tbl"><table id="crmTable"></table></div>
   </section>
   <dialog id="crmDlg"><form id="crmForm"></form></dialog>
+  <dialog id="profDlg" class="wide"><div id="profBody"></div></dialog>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
 <script src="admin.js"></script>
 <script src="crm.js"></script>
+<script src="clients.js"></script>
 </body>
 </html>

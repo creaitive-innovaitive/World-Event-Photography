@@ -1,0 +1,38 @@
+.pane{max-width:900px}
+#bookings h2.grp{font:300 1.5rem 'Fraunces',serif;margin:1.8rem 0 .8rem}
+.bk{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:20px;margin-bottom:18px}
+.bk-h{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start}
+.bk-h h3{margin:0;font-size:1.6rem}
+.bk-tags{display:flex;gap:6px;flex-wrap:wrap}
+.bk h4{font:400 .7rem 'Inter',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin:22px 0 8px}
+.bk .meta{margin:4px 0 0}
+.tot{margin-top:8px;color:var(--mute);font-size:.88rem}.tot b{color:var(--paper);font-weight:500}
+.due{color:var(--gold)}
+.rq .acts{display:flex;gap:6px;margin-top:4px}
+.rq .acts button{padding:3px 12px;font-size:.75rem}
+.rqform{display:grid;grid-template-columns:150px 150px 1fr;gap:8px;margin-top:10px}
+.rqform textarea{grid-column:1/-1;min-height:70px}
+.rqform button{grid-column:1/-1;justify-self:start}
+.rqform select{padding:8px 10px;font-size:.85rem}
+.rating{display:flex;gap:2px;margin-bottom:8px}
+.rating button{background:none;border:0;color:var(--mute);font-size:1.7rem;padding:0 2px;line-height:1}
+.rating button.on{color:var(--gold)}
+.fbform textarea{min-height:80px;margin-bottom:8px}
+.fbform label{display:flex;gap:8px;align-items:center;font-size:.85rem;color:var(--mute);margin-bottom:10px}
+.fbform label input{width:auto}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.gal button{position:relative;aspect-ratio:1;padding:0;border:0;border-radius:6px;overflow:hidden;background:var(--ink)}
+.gal img,.lb img{-webkit-user-drag:none;user-select:none;-webkit-touch-callout:none}
+.gal img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.gal-note{font-size:.82rem;color:var(--mute);margin-bottom:10px}
+#profile{margin-top:2rem}
+#profile h3{margin-top:0}
+#profile form{display:grid;gap:10px;max-width:480px}
+.ok{color:#6fcf97;font-size:.85rem}
+dialog.lb{width:min(1100px,96vw);max-height:96vh;padding:12px;background:#000}
+.lb-frame{position:relative}
+.lb img{width:100%;max-height:78vh;object-fit:contain;display:block}
+.shield{position:absolute;inset:0}
+.lb-bar{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:10px}
+.lb-bar span{color:var(--mute);font-size:.85rem}
+@media(max-width:560px){.rqform{grid-template-columns:1fr}.bk{padding:16px}}

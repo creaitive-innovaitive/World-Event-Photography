@@ -30,11 +30,12 @@ start();
 $$('.tabs button').forEach(b => b.onclick = () => {
   $$('.tabs button').forEach(x => x.classList.toggle('on', x === b));
   const t = b.dataset.tab;
-  $('#enq').hidden = t !== 'enq'; $('#blk').hidden = t !== 'blk'; $('#crm').hidden = !t.startsWith('crm:');
+  $('#enq').hidden = t !== 'enq'; $('#up').hidden = t !== 'up'; $('#blk').hidden = t !== 'blk'; $('#crm').hidden = !t.startsWith('crm:');
+  if (t === 'up') openUpcoming();
   if (t.startsWith('crm:')) openEntity(t.slice(4));
 });
-$$('.filters button').forEach(b => b.onclick = () => {
-  filter = b.dataset.f; $$('.filters button').forEach(x => x.classList.toggle('on', x === b)); renderEnq();
+$$('#enq .filters button').forEach(b => b.onclick = () => {
+  filter = b.dataset.f; $$('#enq .filters button').forEach(x => x.classList.toggle('on', x === b)); renderEnq();
 });
 
 async function loadEnquiries() {

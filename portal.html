@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>My bookings — World Event Photography</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;1,9..144,300&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.ico" sizes="48x48">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="admin.css">
+<link rel="stylesheet" href="portal.css">
+</head>
+<body>
+<main class="box" id="login">
+  <a href="index.html" class="back">← Back to website</a>
+  <h1>My bookings</h1>
+  <p>Sign in with the email you booked with and I'll send you a link. No password needed.</p>
+  <form id="loginForm"><input type="email" id="email" placeholder="you@example.com" required autocomplete="email"><button>Send link</button></form>
+  <p class="msg" id="loginMsg" role="status"></p>
+</main>
+
+<div id="app" hidden>
+  <header class="bar"><a href="index.html" class="back">← Back to website</a><b>My bookings</b><span id="who"></span><button id="out" class="ghost">Sign out</button></header>
+  <div class="pane" id="main">
+    <div id="bookings"></div>
+    <section id="profile"></section>
+  </div>
+</div>
+
+<dialog id="lb" class="lb">
+  <div class="lb-frame"><img id="lbImg" alt="Watermarked proof" draggable="false"><div class="shield"></div></div>
+  <div class="lb-bar"><button class="ghost" id="lbPrev">← Prev</button><span id="lbCount"></span><button class="ghost" id="lbNext">Next →</button><button class="ghost" id="lbClose">Close</button></div>
+</dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="portal.js"></script>
+</body>
+</html>
