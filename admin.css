@@ -107,3 +107,5 @@ button.sm{padding:5px 12px}
 
 .pgrid .pk{position:absolute;left:5px;bottom:4px;color:#e8607a;font-size:1rem;text-shadow:0 0 4px #000}
 .pgrid figure.picked{outline:2px solid #e8607a}
+
+#loginForm .ghost{font-size:.78rem}

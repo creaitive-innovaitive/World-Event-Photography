@@ -15,13 +15,14 @@
 <main class="box" id="login">
   <a href="index.html" class="back">← Back to website</a>
   <h1>Admin</h1>
-  <p>Enter your email and I'll send you a sign-in link.</p>
-  <form id="loginForm"><input type="email" id="email" placeholder="you@example.com" required autocomplete="email"><button>Send link</button></form>
+  <p>Sign in with your email and password, or have a link emailed to you.</p>
+  <form id="loginForm"><input type="email" id="email" placeholder="Email" required autocomplete="username"><input type="password" id="pw" placeholder="Password" autocomplete="current-password"><button>Sign in</button>
+    <button type="button" class="ghost" id="linkBtn">Email me a sign-in link instead</button></form>
   <p class="msg" id="loginMsg" role="status"></p>
 </main>
 
 <div id="app" hidden>
-  <header class="bar"><a href="index.html" class="back">← Back to website</a><b>WEP Admin</b><span id="who"></span><button id="out" class="ghost">Sign out</button></header>
+  <header class="bar"><a href="index.html" class="back">← Back to website</a><b>WEP Admin</b><span id="who"></span><button id="pwBtn" class="ghost">Password</button><button id="out" class="ghost">Sign out</button></header>
   <nav class="tabs"><button data-tab="enq" class="on">Enquiries</button><button data-tab="up">Upcoming</button><button data-tab="crm:customers">Customers</button><button data-tab="crm:orders">Orders</button><button data-tab="crm:events">Events</button><button data-tab="crm:payments">Payments</button><button data-tab="crm:services">Services</button><button data-tab="blk">Blocked dates</button></nav>
 
   <section id="enq" class="pane">
@@ -49,6 +50,10 @@
     <div id="crmStats" class="stats"></div>
     <div class="tbl"><table id="crmTable"></table></div>
   </section>
+  <dialog id="pwDlg"><form id="pwForm"><h3>Set a password</h3>
+    <input type="email" value="" id="pwUser" autocomplete="username" hidden>
+    <label class="fld">New password (8+ characters)<input type="password" id="pwNew" minlength="8" required autocomplete="new-password"></label>
+    <div class="err" id="pwErr"></div><div class="dlg-actions"><button>Save</button><button type="button" class="ghost" id="pwCancel">Cancel</button></div></form></dialog>
   <dialog id="crmDlg"><form id="crmForm"></form></dialog>
   <dialog id="profDlg" class="wide"><div id="profBody"></div></dialog>
 </div>

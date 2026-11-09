@@ -5,10 +5,28 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': 
 const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 let enquiries = [], blocked = new Set(), filter = 'all';
 
+// Password sign-in. Passwords can only be set from a session that came in via an emailed link (so the email is proven),
+// and sign-up is not offered, so nobody can claim someone else's email.
 $('#loginForm').addEventListener('submit', async e => {
   e.preventDefault();
-  const { error } = await db.auth.signInWithOtp({ email: $('#email').value.trim(), options: { emailRedirectTo: location.origin + location.pathname } });
+  const email = $('#email').value.trim(), pw = $('#pw').value;
+  if (!pw) return sendLink(email);
+  $('#loginMsg').textContent = 'Signing in…';
+  const { error } = await db.auth.signInWithPassword({ email, password: pw });
+  $('#loginMsg').textContent = error ? 'Sign-in failed: ' + (error.message === 'Invalid login credentials' ? 'wrong email or password. First time, or forgotten it? Use the email link, then set a password.' : error.message) : '';
+});
+$('#linkBtn').onclick = () => { const em = $('#email'); em.reportValidity() && sendLink(em.value.trim()); };
+async function sendLink(email) {
+  const { error } = await db.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + location.pathname } });
   $('#loginMsg').textContent = error ? 'Could not send link: ' + error.message : 'Check your email for the sign-in link.';
+}
+$('#pwBtn').onclick = () => { $('#pwNew').value = ''; $('#pwErr').textContent = ''; $('#pwUser').value = $('#who').textContent; $('#pwDlg').showModal(); };
+$('#pwCancel').onclick = () => $('#pwDlg').close();
+$('#pwForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const { error } = await db.auth.updateUser({ password: $('#pwNew').value });
+  if (error) return $('#pwErr').textContent = error.message;
+  $('#pwDlg').close(); alert('Password saved. You can now sign in with your email and password.');
 });
 $('#out').onclick = async () => { await db.auth.signOut(); location.reload(); };
 
