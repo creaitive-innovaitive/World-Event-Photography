@@ -172,3 +172,6 @@ create policy "wep admin storage" on storage.objects for all to authenticated
 drop policy if exists "wep customers view proofs" on storage.objects;
 create policy "wep customers view proofs" on storage.objects for select to authenticated
   using (bucket_id = 'proofs' and wep_can_view_proof(name));
+
+-- make the API pick up the new functions and tables straight away
+notify pgrst, 'reload schema';
