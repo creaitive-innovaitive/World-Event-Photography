@@ -87,7 +87,7 @@ section{position:relative}
 .hscroll{height:300vh;position:relative}
 .hs-sticky{position:sticky;top:0;height:100vh;overflow:hidden;display:flex;align-items:center}
 .hs-track{display:flex;gap:2vw;padding:0 var(--gut);will-change:transform}
-.hs-item{position:relative;flex:none;height:68vh;overflow:hidden;border-radius:4px}
+.hs-item{cursor:zoom-in;position:relative;flex:none;height:68vh;overflow:hidden;border-radius:4px}
 .hs-item img{height:100%;width:auto;max-width:none;object-fit:cover}
 .hs-item.big img{min-width:min(78vw,1100px)}
 .hs-item figcaption{position:absolute;left:0;right:0;bottom:0;padding:50px 22px 18px;background:linear-gradient(transparent,rgba(0,0,0,.75));font:italic 300 1.3rem var(--serif)}

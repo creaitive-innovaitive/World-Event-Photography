@@ -54,7 +54,7 @@ addEventListener('resize', frame);
 frame();
 
 // lightbox
-const lb = $('#lb'), lbImg = $('img', lb), imgs = $$('#gallery img');
+const lb = $('#lb'), lbImg = $('img', lb), imgs = $$('#gallery img, .hs-item img');
 let idx = 0;
 const show = i => { idx = (i + imgs.length) % imgs.length; lbImg.src = imgs[idx].src; lbImg.alt = imgs[idx].alt; };
 imgs.forEach((im, i) => im.parentElement.addEventListener('click', () => { show(i); lb.hidden = false; document.body.style.overflow = 'hidden'; }));
